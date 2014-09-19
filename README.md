@@ -1,4 +1,0 @@
-angularcourse
-=============
-
-Angularcourse tutorial
