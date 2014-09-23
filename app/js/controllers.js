@@ -18,8 +18,10 @@ angular.module('myApp.controllers', [])
 		$scope.newParty = 
 		{
 			name: '',
-			phone: '',
-			size: ''
+			email: '',
+			size: '',
+			done: false,
+			notified: 'No'
 		};
 
 		// Function to save a new party to the waitlist
@@ -29,23 +31,46 @@ angular.module('myApp.controllers', [])
 			$scope.newParty = 
 			{
 				name: '',
-				phone: '',
-				size: ''
+				email: '',
+				size: '',
+				done: false,
+				notified: 'No'
 			};
 		};
 
 		// Function to sent a text message to a party.
-		$scope.sendTextMessage = function(party)  //TODO: Change phone number *ALL* to email to test with Gmail>Zapier functions.
+		$scope.sendEmail = function(party)
 		{
-			var textMessageRef = new Firebase('https://waitandeat-auto.firebaseio.com/textMessages');
-			var textMessages = $firebase(textMessageRef);
-			var newTextMessage = 
+			var emailsRef = new Firebase('https://waitandeat-auto.firebaseio.com/emailSent'); //new Firebase object
+			var emailSent = $firebase(emailsRef); //local object = Firebase object
+			var newEmail = 
 			{
-				phoneNumber: party.phone,
+				email: party.email,
 				size: party.size,
 				name: party.name
 			}
 
-			textMessages.$add(newTextMessage);
+			emailSent.$add(newEmail); //add email to Firebase.emailSent queue
+			party.notified = 'Yes';
+			$scope.parties.$save(party.$id); //save changes to Firebase
+		};
+	}])
+	.controller('AuthController', ['$scope', '$firebaseSimpleLogin', function($scope, $firebaseSimpleLogin)
+	{
+		var authRef = new Firebase('https://waitandeat-auto.firebaseio.com/');
+		var auth = $firebaseSimpleLogin(authRef);
+
+		$scope.user = 
+		{
+			email: '',
+			password: ''
+		};
+
+		$scope.register = function()
+		{
+			auth.$createUser($scope.user.email, $scope.user.password).then(function(data)
+				{
+					console.log(data);
+				});
 		};
 	}]);
