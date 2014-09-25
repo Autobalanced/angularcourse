@@ -7,10 +7,10 @@ angular.module('myApp.controllers', [])
 	{
 		
 	}])
-	.controller('WaitListController', ['$scope', '$firebase', function($scope, $firebase)
+	.controller('WaitListController', ['$scope', '$firebase', 'FIREBASE_URL', function($scope, $firebase, FIREBASE_URL)
 	{
 		// Connection $scope.parties to live Firebase data(parties).
-		var partiesRef = new Firebase('https://waitandeat-auto.firebaseio.com/parties')
+		var partiesRef = new Firebase(FIREBASE_URL + 'parties')
 
 		$scope.parties = $firebase(partiesRef);
 
@@ -41,7 +41,7 @@ angular.module('myApp.controllers', [])
 		// Function to sent a text message to a party.
 		$scope.sendEmail = function(party)
 		{
-			var emailsRef = new Firebase('https://waitandeat-auto.firebaseio.com/emailSent'); //new Firebase object
+			var emailsRef = new Firebase(FIREBASE_URL + 'emailSent'); //new Firebase object
 			var emailSent = $firebase(emailsRef); //local object = Firebase object
 			var newEmail = 
 			{
@@ -55,22 +55,31 @@ angular.module('myApp.controllers', [])
 			$scope.parties.$save(party.$id); //save changes to Firebase
 		};
 	}])
-	.controller('AuthController', ['$scope', '$firebaseSimpleLogin', function($scope, $firebaseSimpleLogin)
+	.controller('AuthController', ['$scope', 'authService', function($scope, authService)
 	{
-		var authRef = new Firebase('https://waitandeat-auto.firebaseio.com/');
-		var auth = $firebaseSimpleLogin(authRef);
 
+		//Object bound to user input on register and login page
 		$scope.user = 
 		{
 			email: '',
 			password: ''
 		};
 
+		//Method to register new user using the authService
 		$scope.register = function()
 		{
-			auth.$createUser($scope.user.email, $scope.user.password).then(function(data)
-				{
-					console.log(data);
-				});
+			authService.register($scope.user);
+		};
+
+		//Method to login existing user using the authService
+		$scope.login = function()
+		{
+			authService.login($scope.user);
+		};
+
+		//Method to logout existing user using the authService
+		$scope.logout = function()
+		{
+			authService.logout();
 		};
 	}]);
