@@ -7,12 +7,16 @@ angular.module('myApp.controllers', [])
 	{
 		
 	}])
-	.controller('WaitListController', ['$scope', '$firebase', 'FIREBASE_URL', function($scope, $firebase, FIREBASE_URL)
+	.controller('WaitListController', ['$scope', 'partyService', 'sendEmailService', 'authService', function($scope, partyService, sendEmailService, authService)
 	{
-		// Connection $scope.parties to live Firebase data(parties).
-		var partiesRef = new Firebase(FIREBASE_URL + 'parties')
-
-		$scope.parties = $firebase(partiesRef);
+		// Bind users parties to $scope.parties
+		authService.getCurrentUser().then(function(user)
+		{
+			if (user)
+			{
+				$scope.parties = partyService.getPartiesByUserId(user.id);
+			};
+		})
 
 		// Object to store data from the waitlist.html form.
 		$scope.newParty = 
@@ -27,7 +31,7 @@ angular.module('myApp.controllers', [])
 		// Function to save a new party to the waitlist
 		$scope.saveParty = function()
 		{
-			$scope.parties.$add($scope.newParty);
+			partyService.saveParty($scope.newParty, $scope.currentUser.id);
 			$scope.newParty = 
 			{
 				name: '',
@@ -41,18 +45,7 @@ angular.module('myApp.controllers', [])
 		// Function to sent a text message to a party.
 		$scope.sendEmail = function(party)
 		{
-			var emailsRef = new Firebase(FIREBASE_URL + 'emailSent'); //new Firebase object
-			var emailSent = $firebase(emailsRef); //local object = Firebase object
-			var newEmail = 
-			{
-				email: party.email,
-				size: party.size,
-				name: party.name
-			}
-
-			emailSent.$add(newEmail); //add email to Firebase.emailSent queue
-			party.notified = 'Yes';
-			$scope.parties.$save(party.$id); //save changes to Firebase
+			sendEmailService.sendEmail(party, $scope.currentUser.id);
 		};
 	}])
 	.controller('AuthController', ['$scope', 'authService', function($scope, authService)
